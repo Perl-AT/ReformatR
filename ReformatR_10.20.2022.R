@@ -1,16 +1,16 @@
-# Updated 09.23.2022
+# Updated 10.20.2022 by Andrew Perl
 
 library(shiny)
 
 # Layout of user interface
 ui <- fluidPage(
   
-  titlePanel("Reformat 'Video Freeze' fear conditioning output file"), 
+  titlePanel("Reformat 'Video Freeze' fear conditioning output files"), 
   
   sidebarLayout(
     position="left", 
     sidebarPanel(fileInput("file", 
-                           "'Video Freeze' CVS file for input: ", 
+                           "'Video Freeze' .csv file for input: ", 
                            accept=".csv"
                            ), 
                  radioButtons("radio", 
@@ -20,7 +20,7 @@ ui <- fluidPage(
                               selected=1
                               ), 
                  numericInput("NoM", 
-                              "Number of animals included in current file: ", 
+                              "Number of animals included in selected file: ", 
                               1, 
                               min=0, 
                               max=1000
@@ -30,7 +30,7 @@ ui <- fluidPage(
                               ), 
                  h1(" "
                     ), 
-                 h1("----------------", 
+                 h1("==========", 
                     align="center"
                     ), 
                  h1(" "
@@ -46,7 +46,7 @@ ui <- fluidPage(
   )
 )
 
-# Server w/ reformatting instructions
+# Server portion w/ reformatting instructions
 server <- function(input, output) {
   
   # Blanket instructions
@@ -75,14 +75,17 @@ server <- function(input, output) {
       
       # Reformatting instructions for context test
       else {
-          SecDF[1,5:13] <- FirDF[17:25,6]
+          SecDF[1,5:14] <- FirDF[18:27,6]
+          SecDF[1,15] <- "AVG"
           n <- input$NoM
           for (i in seq(from=1, to=n)) {
             SecDF[(i+1),1] <- i
-            SecDF[(i+1),2] <- FirDF[(17+(9*(i-1))),4]
-            SecDF[(i+1),3] <- FirDF[(17+(9*(i-1))),5]
-            SecDF[(i+1),4] <- FirDF[(17+(9*(i-1))),3]
-            SecDF[(i+1),5:13] <- FirDF[(17:25+(9*(i-1))),10]
+            SecDF[(i+1),2] <- FirDF[(18+(10*(i-1))),4]
+            SecDF[(i+1),3] <- FirDF[(18+(10*(i-1))),5]
+            SecDF[(i+1),4] <- FirDF[(18+(10*(i-1))),3]
+            SecDF[(i+1),5:14] <- FirDF[(18:27+(10*(i-1))),10]
+            mean <- as.numeric(FirDF[(18:27+(10*(i-1))),10])
+            SecDF[(i+1),15] <- mean(mean)
           }
         }
       
