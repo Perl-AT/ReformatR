@@ -139,14 +139,14 @@ server <- function(input, output) {
     FirDF <- read.csv(file1$datapath, header=FALSE, col.names=c(1:30))
     SecDF <- data.frame()
     SecDF[1,1:4] <- c("test number", "animal", "group", "box")
-    AcqTon <- 0
+    OP <- 0
       
     # Reformatting instructions for Acquisition/Tone Test
     if (input$radio == 1) {
       SecDF[1,5:17] <- FirDF[21:33,6]
       n <- input$NoM
       width <- 17
-      AcqTon <- 1
+      OP <- 1
       type <- "Acquisition/Tone Test"
       pro <- "Protocol file: '3 Tone Acquisition 75 Sheryl protocol.pro'"
       cmp <- "Component file: '3 TS DelayToneAquandTest Sheryl.cmp'"
@@ -202,9 +202,11 @@ server <- function(input, output) {
     
     # Reformatting instructions for 10 min Pre-Exposure
     if (input$radio == 4) {
-      SecDF[1,5:15] <- FirDF[19:29,6]
+      SecDF[1,5:15] <- paste0("Freezing_", FirDF[19:29,6])
+      SecDF[1,16:26] <- paste0("Motion_", FirDF[19:29,6])
       n <- input$NoM
-      width <- 15
+      width <- 26
+      OP <- 2
       type <- "10 min Pre-Exposure"
       pro <- "Protocol file: '10 min pre-exposure Days 1 and 2.pro'"
       cmp <- "Component file: '10 min preexposure.cmp'"
@@ -213,15 +215,20 @@ server <- function(input, output) {
         SecDF[(i+1),2] <- FirDF[(19+(11*(i-1))),4]
         SecDF[(i+1),3] <- FirDF[(19+(11*(i-1))),5]
         SecDF[(i+1),4] <- FirDF[(19+(11*(i-1))),3]
+        # freezing data
         SecDF[(i+1),5:15] <- FirDF[(19:29+(11*(i-1))),10]
+        # motion data
+        SecDF[(i+1),16:26] <- FirDF[(19:29+(11*(i-1))),11]
       }
     }
     
     # Reformatting instructions for Immediate Shock
     if (input$radio == 5) {
-      SecDF[1,5:7] <- FirDF[11:13,6]
+      SecDF[1,5:7] <- paste0("Freezing_", FirDF[11:13,6])
+      SecDF[1,8:10] <- paste0("Motion_", FirDF[11:13,6])
       n <- input$NoM
-      width <- 7
+      width <- 10
+      OP <- 2
       type <- "Immediate Shock"
       pro <- "Protocol file: 'Immediate Shock 10sec PSI Day 3.pro'"
       cmp <- "Component file: 'immediate shock 10s PSI.cmp'"
@@ -230,7 +237,10 @@ server <- function(input, output) {
         SecDF[(i+1),2] <- FirDF[(11+(3*(i-1))),4]
         SecDF[(i+1),3] <- FirDF[(11+(3*(i-1))),5]
         SecDF[(i+1),4] <- FirDF[(11+(3*(i-1))),3]
+        # freezing data
         SecDF[(i+1),5:7] <- FirDF[(11:13+(3*(i-1))),10]
+        # motion data
+        SecDF[(i+1),8:10] <- FirDF[(11:13+(3*(i-1))),11]
       }
     }
     
@@ -240,14 +250,16 @@ server <- function(input, output) {
     SecDF2[(n+3),1] <- "ReformatR version: 1.0"
     SecDF2[(n+4),1] <- paste0("Date/time: ", as.character(Sys.time()))
     SecDF2[(n+6:8),1] <- c(type, pro, cmp)
-    if (AcqTon == 1) {
-      SecDF2[(n+9),1] <- "Output values for all three shocks are 'Avg Motion Index,' and output values for all other components are 'Pct Component Time Freezing.'"
-    }
-    if (AcqTon == 0) {
+    if (OP == 0) {
       SecDF2[(n+9),1] <- "Output values for all components are 'Pct Component Time Freezing.'"
     }
+    if (OP == 1) {
+      SecDF2[(n+9),1] <- "Output values for all three shocks are 'Avg Motion Index,' and output values for all other components are 'Pct Component Time Freezing.'"
+    }
+    if (OP == 2) {
+      SecDF2[(n+9),1] <- "Output values in 'Freezing_' columns are 'Pct Component Time Freezing,' while values in 'Motion_' columns are 'Avg Motion Index.'"
+    }
     
-    # I hope someone can explain why these two lines are necessary to me someday
     SecDF2 <<- SecDF2
     SecDF <<- SecDF
     
