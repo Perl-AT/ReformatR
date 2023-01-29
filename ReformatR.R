@@ -1,4 +1,4 @@
-# Updated 01.25.2023 by Andrew Perl
+# Updated XX.XX.2023 by Andrew Perl
 
 library(shiny)
 
@@ -88,13 +88,13 @@ ui <- fluidPage(navbarPage(title="ReformatR 1.0",
            tags$ul(
              tags$li(strong("Protocol:"), code("10 min pre-exposure Days 1 and 2.pro")), 
              tags$li(strong("Component File:"), code("10 min preexposure.cmp")), 
-             tags$li(strong("ReformatR Output:"), "Output values for all components are 'Pct Component Time Freezing.'")
+             tags$li(strong("ReformatR Output:"), "Output values in 'Freezing_' columns are 'Pct Component Time Freezing,' while values in 'Motion_' columns are 'Avg Motion Index.'")
            ), 
            h5("Immediate Shock"), 
            tags$ul(
              tags$li(strong("Protocol:"), code("Immediate Shock 10sec PSI Day 3.pro")), 
              tags$li(strong("Component File:"), code("immediate shock 10s PSI.cmp")), 
-             tags$li(strong("ReformatR Output:"), "Output values for all components are 'Pct Component Time Freezing.'")
+             tags$li(strong("ReformatR Output:"), "Output values in 'Freezing_' columns are 'Pct Component Time Freezing,' while values in 'Motion_' columns are 'Avg Motion Index.'")
            ), 
            hr(), 
            h3("Roadmap"), 
@@ -144,8 +144,9 @@ server <- function(input, output) {
     # Reformatting instructions for Acquisition/Tone Test
     if (input$radio == 1) {
       SecDF[1,5:17] <- FirDF[21:33,6]
+      SecDF[1,18:20] <- c("Tone_AVG", "Shock_AVG", "Trace_AVG")
       n <- input$NoM
-      width <- 17
+      width <- 20
       OP <- 1
       type <- "Acquisition/Tone Test"
       pro <- "Protocol file: '3 Tone Acquisition 75 Sheryl protocol.pro'"
@@ -159,6 +160,9 @@ server <- function(input, output) {
         SecDF[(i+1),7] <- FirDF[(23+(13*(i-1))),11]
         SecDF[(i+1),10] <- FirDF[(26+(13*(i-1))),11]
         SecDF[(i+1),13] <- FirDF[(29+(13*(i-1))),11]
+        SecDF[(i+1),18] <- mean(as.numeric(SecDF[(i+1),c(6,9,12)]))
+        SecDF[(i+1),19] <- mean(as.numeric(SecDF[(i+1),c(7,10,13)]))
+        SecDF[(i+1),20] <- mean(as.numeric(SecDF[(i+1),c(15,16,17)]))
       }
     }
       
@@ -177,8 +181,7 @@ server <- function(input, output) {
         SecDF[(i+1),3] <- FirDF[(18+(10*(i-1))),5]
         SecDF[(i+1),4] <- FirDF[(18+(10*(i-1))),3]
         SecDF[(i+1),5:14] <- FirDF[(18:27+(10*(i-1))),10]
-        mean <- as.numeric(FirDF[(18:27+(10*(i-1))),10])
-        SecDF[(i+1),15] <- mean(mean)
+        SecDF[(i+1),15] <- mean(as.numeric(FirDF[(18:27+(10*(i-1))),10]))
         }
       }
     
