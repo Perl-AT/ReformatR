@@ -1,17 +1,17 @@
-# Updated XX.XX.2023 by Andrew Perl
+# Updated 01.31.2023 by Andrew Perl
 
 library(shiny)
 
 # Layout of user interface
-ui <- fluidPage(navbarPage(title="ReformatR 1.0", 
+ui <- fluidPage(navbarPage(title="ReformatR 1.1", 
   
   # GUI layout
   tabPanel("GUI", 
-    titlePanel("Reformat 'Video Freeze' fear conditioning output files."), 
+    titlePanel("Reformat Video Freeze reports from fear conditioning experiments."), 
     sidebarLayout(
       position="left", 
       sidebarPanel(fileInput("file", 
-                             "'Video Freeze' .csv file for input: ", 
+                             "Video Freeze report (.csv) for input: ", 
                              accept=".csv"
                              ), 
                    radioButtons("radio", 
@@ -45,19 +45,16 @@ ui <- fluidPage(navbarPage(title="ReformatR 1.0",
       )
     ), 
   
-  # Embedded README tab
-  tabPanel("README", 
-           h1("README"), 
-           hr(), 
-           h3(a(href="https://github.com/Perl-AT/ReformatR", "ReformatR 1.0")), 
-           p("This ", a(href="https://www.rdocumentation.org/packages/shiny/versions/1.7.2", "shiny"), "app takes, as input, .csv reports from Med Associates ", a(href="https://med-associates.com/product/videofreeze-video-fear-conditioning-software/", "Video Freeze"), a(href="https://med-associates.com/wp-content/uploads/2022/09/DOC-321-R1.1-SOF-843-USB-Video-Freeze.pdf", "(manual)"), "and makes, as output, new .csv files containing only key data from the input file, reformatted so as to be readily handleable in R and SPSS."), 
+  # Usage tab layout
+  tabPanel("Usage", 
+           h1(a(href="https://github.com/Perl-AT/ReformatR", "ReformatR 1.1")), 
+           p("This ", a(href="https://www.rdocumentation.org/packages/shiny", "shiny"), "app takes, as input, .csv reports from Med Associates ", a(href="https://med-associates.com/product/videofreeze-video-fear-conditioning-software/", "Video Freeze"), a(href="https://med-associates.com/wp-content/uploads/2022/09/DOC-321-R1.1-SOF-843-USB-Video-Freeze.pdf", "(manual)"), "and makes, as output, new .csv files containing only key data from the input file, reformatted so as to be readily handleable in R and SPSS."), 
            hr(), 
            h3("Usage"), 
            tags$ol(
-             tags$li("Open ReformatR.R in R or RStudio and run the code,"), 
-             tags$li("upload intended input file,"), 
+             tags$li("Upload intended input file,"), 
              tags$li("select type of experiment,"), 
-             tags$li("type the number of tests run in the selected experiment's file (overestimation will not compromise integrity of output),"), 
+             tags$li("type the number of tests run in the selected experiment's file (overestimation will not compromise the integrity of the output),"), 
              tags$li("hit the 'Generate reformatted table' button,"), 
              tags$li("double-check the table displayed in the main panel for obvious errors,"), 
              tags$li("type the intended name for the output file, and"), 
@@ -97,34 +94,10 @@ ui <- fluidPage(navbarPage(title="ReformatR 1.0",
              tags$li(strong("ReformatR Output:"), "Output values in 'Freezing_' columns are 'Pct Component Time Freezing,' while values in 'Motion_' columns are 'Avg Motion Index.'")
            ), 
            hr(), 
-           h3("Roadmap"), 
-           p("Accommodation for new experiment types can be added into the existing framework ", tags$i("ad libitum", .noWS="after"), "."), 
+           h3("Getting Help"), 
+           p("Reach out to the maintainer for help or to make suggestions, or submit issues or pull requests on ", a(href= "https://github.com/Perl-AT/ReformatR", "GitHub", .noWS="after"), ". Accommodation for new experiment types can be added into the existing framework ", tags$i("ad libitum", .noWS="after"), "."), 
            hr(), 
-           h3("Contributing"), 
-           p("Submit issues or pull requests in ", a(href="https://github.com/Perl-AT/ReformatR", "GitHub"), "or reach out to maintainer."), 
-           hr(), 
-           h3("Changelog"), 
-           h5("Version 1.0 | 01.25.2023 (Andrew Perl)"), 
-           tags$ul(
-             tags$li("Updated to handle reformatting for three additional experiment types."), 
-             tags$li("Embedded most README content into the UI itself."), 
-             tags$li("Output files now contain informative footers."), 
-             tags$li("Fixed the ", code("actionButton"), "(🙌) and other minor quirks.")
-           ), 
-           h5("Version 0.2 | 10.20.2022 (Andrew Perl)"), 
-           tags$ul(
-             tags$li("Updated to accommodate corrected .cmp component file for 5 min/30 sec Context Test reports."), 
-             tags$li("Addition of 'average' column to 5 min/30 sec Context Test output tables.")
-           ), 
-           h5("Version 0.1 | 09.23.2022 (Andrew Perl)"), 
-           tags$ul(
-             tags$li("Reformating for Acquisition/Tone and 5 min/30 sec Context Tests facilitated.")
-           ), 
-           hr(), 
-           h3("Dependency (", tags$i("etc.", .noWS="after"), ") Management"), 
-           p(tags$b("ReformatR 1.0"), "has been constructed and tested to reformat reports from ", tags$b("Video Freeze"), tags$u("v2.7.3.0"), "using ", tags$b("R"), "(for Mac) ", tags$u("v4.2.1"), "in ", tags$b("RStudio"), "(for Mac) ", tags$u("v2022.07.0+548,"), "and using the ", tags$b("shiny"), "package ", tags$u("v1.7.2", .noWS="after"), ". It is recommended that users first test ReformatR with different versions of R, RStudio and shiny before sanctioning data produced under their auspices."), 
-           hr(), 
-           h5("Author and maintainer: Andrew Perl (perlat@nih.gov; atperl123@gmail.com; ", a(href="https://github.com/Perl-AT", "Perl-AT", .noWS="after"), ")")
+           h5("Author/Maintainer: Andrew Perl (perlat@nih.gov; atperl123@gmail.com; ", a(href="https://github.com/Perl-AT", "Perl-AT", .noWS="after"), ")")
            )
   
   )
@@ -250,7 +223,7 @@ server <- function(input, output) {
     # Footer information
     SecDF2 <- SecDF
     SecDF2[(n+2:9),1:width] <- ""
-    SecDF2[(n+3),1] <- "ReformatR version: 1.0"
+    SecDF2[(n+3),1] <- "ReformatR version: 1.1"
     SecDF2[(n+4),1] <- paste0("Date/time: ", as.character(Sys.time()))
     SecDF2[(n+6:8),1] <- c(type, pro, cmp)
     if (OP == 0) {
