@@ -241,11 +241,17 @@ server <- function(input, output) {
     
     # Footer information
     SecDF2 <- SecDF
-    SecDF2[(n+2:9),1:width] <- ""
-    SecDF2[(n+3),1] <- "ReformatR version: 1.2"
-    SecDF2[(n+4),1] <- paste("Reformatting date/time:", as.character(paste(Sys.time(), "|", Sys.timezone())))
-    SecDF2[(n+6:8),1] <- c(type, pro, cmp)
-    SecDF2[(n+9),1] <- "Output values in columns beginning with 'FREEZING_' are the 'Pct Component Time Freezing' values associated with the indicated component, while values in the corresponding 'MOTION_' columns are 'Avg Motion Index.'"
+    SecDF2[(n+2:13),1:width] <- ""
+    
+    SecDF2[(n+3:5),1] <- c(type, pro, cmp)
+    SecDF2[(n+6),1] <- "Output values in columns beginning with 'FREEZING_' are the 'Pct Component Time Freezing' values associated with the indicated component, while values in the corresponding 'MOTION_' columns are 'Avg Motion Index.'"
+    
+    SecDF2[(n+8),1] <- paste("Time of experiment:", as.character(FirDF[1,2]))
+    SecDF2[(n+9),1] <- paste("Time of reformatting:", as.character(paste(Sys.time(), "|", Sys.timezone())))
+    
+    SecDF2[(n+11),1] <- R.version$version.string
+    SecDF2[(n+12),1] <- paste("shiny version", packageVersion("shiny"))
+    SecDF2[(n+13),1] <- "ReformatR version 1.2"
     
     SecDF2 <<- SecDF2
     SecDF <<- SecDF
