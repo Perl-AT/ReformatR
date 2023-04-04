@@ -2,6 +2,14 @@
 
 This "shiny" app takes, as input, .csv reports from Med Associates Video Freeze and makes, as output, new .csv files containing only key data from the input file, reformatted so as to be readily handleable in R and SPSS. 
 
+---
+
+###### Addendum 03.29.2023: Getting Started and Usage for using ReformatR online as a web app
+*Open [this link](https://perl-at.shinyapps.io/reformatr-1/?_ga=2.177323361.513133927.1680121611-2117305169.1680121611) to access the app online.*
+*More information on how to operate ReformatR is contained within the GUI itself in a separate "Usage" tab.*
+
+---
+
 ## Getting Started
 
 Download one of the compressed files listed as assets under the latest release of ReformatR, and decompress the file. 
