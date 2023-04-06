@@ -1,5 +1,3 @@
-# Updated 02.15.2023 by Andrew Perl
-
 library(shiny)
 
 # Layout of user interface
@@ -14,6 +12,15 @@ ui <- fluidPage(navbarPage(title="ReformatR 1.2",
                              "Video Freeze report (.csv) for input: ", 
                              accept=".csv"
                              ), 
+                   radioButtons("empties",
+                                "In handling the .csv input file, ", 
+                                choices=list("R ignores empty rows. "=1, 
+                                             "R does not ignore empty rows. "=2
+                                             ), 
+                                selected=1
+                                ), 
+                   p("(If you don't know, test both.)"), 
+                   hr(), 
                    radioButtons("radio", 
                                 "Type of experiment: ", 
                                 choices=list("Acquisition/Tone Test"=1, 
@@ -36,10 +43,11 @@ ui <- fluidPage(navbarPage(title="ReformatR 1.2",
                    hr(), 
                    textInput("outputname", 
                              "Name for output .csv file: ", 
-                             value=""), 
+                             value=""
+                             ), 
                    downloadButton("pressme2", 
                                   "Save reformatted file")
-                   ), 
+                                  ), 
       mainPanel(tableOutput("SecDF")
                 )
       )
@@ -110,12 +118,22 @@ server <- function(input, output) {
     FirDF <- read.csv(file1$datapath, header=FALSE, col.names=c(1:30))
     SecDF <- data.frame()
     SecDF[1,1:6] <- c("test number", "animal", "group", "experiment", "trial", "box")
-      
+    
     # Reformatting instructions for Acquisition/Tone Test
+    if (input$empties == 1) {
+      square1 <- 21
+      cycle <- 13
+      end <- 33
+    }
+    if (input$empties == 2) {
+      square1 <- 25
+      cycle <- 14
+      end <- 37
+    }
     if (input$radio == 1) {
-      SecDF[1,7:19] <- paste0("FREEZING_", FirDF[21:33,6])
+      SecDF[1,7:19] <- paste0("FREEZING_", FirDF[square1:end,6])
       SecDF[1,20:22] <- paste0("FREEZING_", c("Tone_AVG", "Shock_AVG", "Trace_AVG"))
-      SecDF[1,23:35] <- paste0("MOTION_", FirDF[21:33,6])
+      SecDF[1,23:35] <- paste0("MOTION_", FirDF[square1:end,6])
       SecDF[1,36:38] <- paste0("MOTION_", c("Tone_AVG", "Shock_AVG", "Trace_AVG"))
       n <- input$NoM
       width <- 38
@@ -124,29 +142,39 @@ server <- function(input, output) {
       cmp <- "Component file: '3 TS DelayToneAquandTest Sheryl.cmp'"
       for (i in seq(from=1, to=n)) {
         SecDF[(i+1),1] <- i
-        SecDF[(i+1),2] <- FirDF[(21+(13*(i-1))),4]
-        SecDF[(i+1),3] <- FirDF[(21+(13*(i-1))),5]
-        SecDF[(i+1),4] <- FirDF[(21+(13*(i-1))),1]
-        SecDF[(i+1),5] <- FirDF[(21+(13*(i-1))),2]
-        SecDF[(i+1),6] <- FirDF[(21+(13*(i-1))),3]
+        SecDF[(i+1),2] <- FirDF[(square1+(cycle*(i-1))),4]
+        SecDF[(i+1),3] <- FirDF[(square1+(cycle*(i-1))),5]
+        SecDF[(i+1),4] <- FirDF[(square1+(cycle*(i-1))),1]
+        SecDF[(i+1),5] <- FirDF[(square1+(cycle*(i-1))),2]
+        SecDF[(i+1),6] <- FirDF[(square1+(cycle*(i-1))),3]
         # freezing data
-        SecDF[(i+1),7:19] <- FirDF[(21:33+(13*(i-1))),10]
+        SecDF[(i+1),7:19] <- FirDF[(square1:end+(cycle*(i-1))),10]
         SecDF[(i+1),20] <- mean(as.numeric(SecDF[(i+1),c(8,11,14)]))
         SecDF[(i+1),21] <- mean(as.numeric(SecDF[(i+1),c(9,12,15)]))
         SecDF[(i+1),22] <- mean(as.numeric(SecDF[(i+1),c(17,18,19)]))
         # motion data
-        SecDF[(i+1),23:35] <- FirDF[(21:33+(13*(i-1))),11]
+        SecDF[(i+1),23:35] <- FirDF[(square1:end+(cycle*(i-1))),11]
         SecDF[(i+1),36] <- mean(as.numeric(SecDF[(i+1),c(24,27,30)]))
         SecDF[(i+1),37] <- mean(as.numeric(SecDF[(i+1),c(25,28,31)]))
         SecDF[(i+1),38] <- mean(as.numeric(SecDF[(i+1),c(33,34,35)]))
       }
     }
-      
+    
     # Reformatting instructions for 5 min/30 sec Context Test
+    if (input$empties == 1) {
+      square1 <- 18
+      cycle <- 10
+      end <- 27
+    }
+    if (input$empties == 2) {
+      square1 <- 22
+      cycle <- 11
+      end <- 31
+    }
     if (input$radio == 2) {
-      SecDF[1,7:16] <- paste0("FREEZING_", FirDF[18:27,6])
+      SecDF[1,7:16] <- paste0("FREEZING_", FirDF[square1:end,6])
       SecDF[1,17] <- "FREEZING_AVG"
-      SecDF[1,18:27] <- paste0("MOTION_", FirDF[18:27,6])
+      SecDF[1,18:27] <- paste0("MOTION_", FirDF[square1:end,6])
       SecDF[1,28] <- "MOTION_AVG"
       n <- input$NoM
       width <- 28
@@ -155,25 +183,34 @@ server <- function(input, output) {
       cmp <- "Component file: '5minContext30secbinsFIXED.cmp'"
       for (i in seq(from=1, to=n)) {
         SecDF[(i+1),1] <- i
-        SecDF[(i+1),2] <- FirDF[(18+(10*(i-1))),4]
-        SecDF[(i+1),3] <- FirDF[(18+(10*(i-1))),5]
-        SecDF[(i+1),4] <- FirDF[(18+(10*(i-1))),1]
-        SecDF[(i+1),5] <- FirDF[(18+(10*(i-1))),2]        
-        SecDF[(i+1),6] <- FirDF[(18+(10*(i-1))),3]
+        SecDF[(i+1),2] <- FirDF[(square1+(cycle*(i-1))),4]
+        SecDF[(i+1),3] <- FirDF[(square1+(cycle*(i-1))),5]
+        SecDF[(i+1),4] <- FirDF[(square1+(cycle*(i-1))),1]
+        SecDF[(i+1),5] <- FirDF[(square1+(cycle*(i-1))),2]        
+        SecDF[(i+1),6] <- FirDF[(square1+(cycle*(i-1))),3]
         # freezing data
-        SecDF[(i+1),7:16] <- FirDF[(18:27+(10*(i-1))),10]
-        SecDF[(i+1),17] <- mean(as.numeric(FirDF[(18:27+(10*(i-1))),10]))
+        SecDF[(i+1),7:16] <- FirDF[(square1:end+(cycle*(i-1))),10]
+        SecDF[(i+1),17] <- mean(as.numeric(FirDF[(square1:end+(cycle*(i-1))),10]))
         # motion data
-        SecDF[(i+1),18:27] <- FirDF[(18:27+(10*(i-1))),11]
-        SecDF[(i+1),28] <- mean(as.numeric(FirDF[(18:27+(10*(i-1))),11]))
-        }
+        SecDF[(i+1),18:27] <- FirDF[(square1:end+(cycle*(i-1))),11]
+        SecDF[(i+1),28] <- mean(as.numeric(FirDF[(square1:end+(cycle*(i-1))),11]))
       }
+    }
     
     # Reformatting instructions for 5 min/1 min Context Test
-    # Note: during tests ReformatR did not handle empty rows in the input .csv the way it has for other inputs (i.e. it did not ignore empty rows) -- this was for both tested input files. Keep an eye on this test... 
+    if (input$empties == 1) {
+      square1 <- 14
+      cycle <- 6
+      end <- 19
+    }
+    if (input$empties == 2) {
+      square1 <- 18
+      cycle <- 7
+      end <- 23
+    }
     if (input$radio == 3) {
-      SecDF[1,7:12] <- paste0("FREEZING_", FirDF[18:23,6])
-      SecDF[1,13:18] <- paste0("MOTION_", FirDF[18:23,6])
+      SecDF[1,7:12] <- paste0("FREEZING_", FirDF[square1:end,6])
+      SecDF[1,13:18] <- paste0("MOTION_", FirDF[square1:end,6])
       n <- input$NoM
       width <- 18
       type <- "5 min/1 min Context Test"
@@ -181,22 +218,32 @@ server <- function(input, output) {
       cmp <- "Component file: '5Minute context test.cmp'"
       for (i in seq(from=1, to=n)) {
         SecDF[(i+1),1] <- i
-        SecDF[(i+1),2] <- FirDF[(18+(7*(i-1))),4]
-        SecDF[(i+1),3] <- FirDF[(18+(7*(i-1))),5]
-        SecDF[(i+1),4] <- FirDF[(18+(7*(i-1))),1]
-        SecDF[(i+1),5] <- FirDF[(18+(7*(i-1))),2]
-        SecDF[(i+1),6] <- FirDF[(18+(7*(i-1))),3]
+        SecDF[(i+1),2] <- FirDF[(square1+(cycle*(i-1))),4]
+        SecDF[(i+1),3] <- FirDF[(square1+(cycle*(i-1))),5]
+        SecDF[(i+1),4] <- FirDF[(square1+(cycle*(i-1))),1]
+        SecDF[(i+1),5] <- FirDF[(square1+(cycle*(i-1))),2]
+        SecDF[(i+1),6] <- FirDF[(square1+(cycle*(i-1))),3]
         # freezing data
-        SecDF[(i+1),7:12] <- FirDF[(18:23+(7*(i-1))),10]
+        SecDF[(i+1),7:12] <- FirDF[(square1:end+(cycle*(i-1))),10]
         # motion data
-        SecDF[(i+1),13:18] <- FirDF[(18:23+(7*(i-1))),11]
+        SecDF[(i+1),13:18] <- FirDF[(square1:end+(cycle*(i-1))),11]
       }
     }
     
     # Reformatting instructions for 10 min Pre-Exposure
+    if (input$empties == 1) {
+      square1 <- 19
+      cycle <- 11
+      end <- 29
+      }
+    if (input$empties == 2) {
+      square1 <- 23
+      cycle <- 12
+      end <- 33
+      }
     if (input$radio == 4) {
-      SecDF[1,7:17] <- paste0("FREEZING_", FirDF[19:29,6])
-      SecDF[1,18:28] <- paste0("MOTION_", FirDF[19:29,6])
+      SecDF[1,7:17] <- paste0("FREEZING_", FirDF[square1:end,6])
+      SecDF[1,18:28] <- paste0("MOTION_", FirDF[square1:end,6])
       n <- input$NoM
       width <- 28
       type <- "10 min Pre-Exposure"
@@ -204,22 +251,32 @@ server <- function(input, output) {
       cmp <- "Component file: '10 min preexposure.cmp'"
       for (i in seq(from=1, to=n)) {
         SecDF[(i+1),1] <- i
-        SecDF[(i+1),2] <- FirDF[(19+(11*(i-1))),4]
-        SecDF[(i+1),3] <- FirDF[(19+(11*(i-1))),5]
-        SecDF[(i+1),4] <- FirDF[(19+(11*(i-1))),1]
-        SecDF[(i+1),5] <- FirDF[(19+(11*(i-1))),2]
-        SecDF[(i+1),6] <- FirDF[(19+(11*(i-1))),3]
+        SecDF[(i+1),2] <- FirDF[(square1+(cycle*(i-1))),4]
+        SecDF[(i+1),3] <- FirDF[(square1+(cycle*(i-1))),5]
+        SecDF[(i+1),4] <- FirDF[(square1+(cycle*(i-1))),1]
+        SecDF[(i+1),5] <- FirDF[(square1+(cycle*(i-1))),2]
+        SecDF[(i+1),6] <- FirDF[(square1+(cycle*(i-1))),3]
         # freezing data
-        SecDF[(i+1),7:17] <- FirDF[(19:29+(11*(i-1))),10]
+        SecDF[(i+1),7:17] <- FirDF[(square1:end+(cycle*(i-1))),10]
         # motion data
-        SecDF[(i+1),18:28] <- FirDF[(19:29+(11*(i-1))),11]
+        SecDF[(i+1),18:28] <- FirDF[(square1:end+(cycle*(i-1))),11]
       }
     }
     
     # Reformatting instructions for Immediate Shock
+    if (input$empties == 1) {
+      square1 <- 11
+      cycle <- 3
+      end <- 13
+    }
+    if (input$empties == 2) {
+      square1 <- 15
+      cycle <- 4
+      end <- 17
+    }
     if (input$radio == 5) {
-      SecDF[1,7:9] <- paste0("FREEZING_", FirDF[11:13,6])
-      SecDF[1,10:12] <- paste0("MOTION_", FirDF[11:13,6])
+      SecDF[1,7:9] <- paste0("FREEZING_", FirDF[square1:end,6])
+      SecDF[1,10:12] <- paste0("MOTION_", FirDF[square1:end,6])
       n <- input$NoM
       width <- 12
       type <- "Immediate Shock"
@@ -227,15 +284,15 @@ server <- function(input, output) {
       cmp <- "Component file: 'immediate shock 10s PSI.cmp'"
       for (i in seq(from=1, to=n)) {
         SecDF[(i+1),1] <- i
-        SecDF[(i+1),2] <- FirDF[(11+(3*(i-1))),4]
-        SecDF[(i+1),3] <- FirDF[(11+(3*(i-1))),5]
-        SecDF[(i+1),4] <- FirDF[(11+(3*(i-1))),1]
-        SecDF[(i+1),5] <- FirDF[(11+(3*(i-1))),2]
-        SecDF[(i+1),6] <- FirDF[(11+(3*(i-1))),3]
+        SecDF[(i+1),2] <- FirDF[(square1+(cycle*(i-1))),4]
+        SecDF[(i+1),3] <- FirDF[(square1+(cycle*(i-1))),5]
+        SecDF[(i+1),4] <- FirDF[(square1+(cycle*(i-1))),1]
+        SecDF[(i+1),5] <- FirDF[(square1+(cycle*(i-1))),2]
+        SecDF[(i+1),6] <- FirDF[(square1+(cycle*(i-1))),3]
         # freezing data
-        SecDF[(i+1),7:9] <- FirDF[(11:13+(3*(i-1))),10]
+        SecDF[(i+1),7:9] <- FirDF[(square1:end+(cycle*(i-1))),10]
         # motion data
-        SecDF[(i+1),10:12] <- FirDF[(11:13+(3*(i-1))),11]
+        SecDF[(i+1),10:12] <- FirDF[(square1:end+(cycle*(i-1))),11]
       }
     }
     
