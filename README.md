@@ -5,7 +5,7 @@ This [shiny](https://www.rdocumentation.org/packages/shiny/versions/1.7.4) app t
 ## Getting Started
 
 To open the GUI, one might 
-* follow [this link](https://perl-at.shinyapps.io/reformatr-1/) to open the web app version of ReformatR hosted at [shinyapps.io](https://www.shinyapps.io) in one's default web browser, 
+* follow [this link](https://perl-at.shinyapps.io/reformatr/) to open the web app version of ReformatR hosted at [shinyapps.io](https://www.shinyapps.io) in one's default web browser, 
 * run `shiny::runApp("~/Desktop/ReformatR.R")` in R, or `/usr/local/bin/R --vanilla --no-echo -e 'library(methods); shiny::runApp("~/Desktop/ReformatR.R", launch.browser = TRUE)'` in the terminal on Mac, or some such command to deploy the ReformatR.R script file from one's desktop or other preferred location, 
 * or simply copy and paste the ReformatR.R code into R or RStudio and run it. 
 
