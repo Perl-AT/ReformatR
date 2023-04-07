@@ -14,12 +14,12 @@ ui <- fluidPage(navbarPage(title="ReformatR 1.2",
                              ), 
                    radioButtons("empties",
                                 "In handling the .csv input file, ", 
-                                choices=list("R ignores empty rows. "=1, 
+                                choices=list("R ignores empty rows (usual). "=1, 
                                              "R does not ignore empty rows. "=2
                                              ), 
                                 selected=1
                                 ), 
-                   p("(If you don't know, test both.)"), 
+                   p("(If you don't know, test both. The headers will be noticeably disordered.) "), 
                    hr(), 
                    radioButtons("radio", 
                                 "Type of experiment: ", 
@@ -31,6 +31,7 @@ ui <- fluidPage(navbarPage(title="ReformatR 1.2",
                                              ), 
                                 selected=1
                                 ), 
+                   hr(), 
                    numericInput("NoM", 
                                 "Number of tests run in selected file: ", 
                                 1, 
@@ -98,7 +99,7 @@ ui <- fluidPage(navbarPage(title="ReformatR 1.2",
              tags$li(strong("Component File:"), code("immediate shock 10s PSI.cmp"))
            ), 
            br(), 
-           p("Output values in columns beginning with 'FREEZING_' are the 'Pct Component Time Freezing' values associated with the indicated component, while values in the corresponding 'MOTION_' columns are 'Avg Motion Index.' It is recommended that 'Shock' components and all components of the 10 min Pre-Exposure test be analyzed according to their MOTION_ data, while all other components have their FREEZING_ data analyzed."), 
+           p("'FREEZING_' columns contain 'Pct Component Time Freezing' values associated with the indicated component, while 'MOTION_' columns contain the corresponding 'Avg Motion Index' data. "), 
            hr(), 
            h3("Getting Help"), 
            p("Reach out to the maintainer for help or to make suggestions, or submit issues or pull requests on ", a(href= "https://github.com/Perl-AT/ReformatR", "GitHub", .noWS="after"), ". Accommodation for new experiment types can be added into the existing framework ", tags$i("ad libitum", .noWS="after"), "."), 
@@ -118,6 +119,8 @@ server <- function(input, output) {
     FirDF <- read.csv(file1$datapath, header=FALSE, col.names=c(1:30))
     SecDF <- data.frame()
     SecDF[1,1:6] <- c("test number", "animal", "group", "experiment", "trial", "box")
+    if (input$empties == 1) {yesno <- "Yes"}
+    if (input$empties == 2) {yesno <- "No"}
     
     # Reformatting instructions for Acquisition/Tone Test
     if (input$empties == 1) {
@@ -137,7 +140,7 @@ server <- function(input, output) {
       SecDF[1,36:38] <- paste0("MOTION_", c("Tone_AVG", "Shock_AVG", "Trace_AVG"))
       n <- input$NoM
       width <- 38
-      type <- "Acquisition/Tone Test"
+      type <- "Experiment: Acquisition/Tone Test"
       pro <- "Protocol file: '3 Tone Acquisition 75 Sheryl protocol.pro'"
       cmp <- "Component file: '3 TS DelayToneAquandTest Sheryl.cmp'"
       for (i in seq(from=1, to=n)) {
@@ -178,7 +181,7 @@ server <- function(input, output) {
       SecDF[1,28] <- "MOTION_AVG"
       n <- input$NoM
       width <- 28
-      type <- "5 min/30 sec Context Test"
+      type <- "Experiment: 5 min/30 sec Context Test"
       pro <- "Protocol file: 'Context Test 5 min.pro'"
       cmp <- "Component file: '5minContext30secbinsFIXED.cmp'"
       for (i in seq(from=1, to=n)) {
@@ -213,7 +216,7 @@ server <- function(input, output) {
       SecDF[1,13:18] <- paste0("MOTION_", FirDF[square1:end,6])
       n <- input$NoM
       width <- 18
-      type <- "5 min/1 min Context Test"
+      type <- "Experiment: 5 min/1 min Context Test"
       pro <- "Protocol file: '5 min context test Days 4 and 5.pro'"
       cmp <- "Component file: '5Minute context test.cmp'"
       for (i in seq(from=1, to=n)) {
@@ -246,7 +249,7 @@ server <- function(input, output) {
       SecDF[1,18:28] <- paste0("MOTION_", FirDF[square1:end,6])
       n <- input$NoM
       width <- 28
-      type <- "10 min Pre-Exposure"
+      type <- "Experiment: 10 min Pre-Exposure"
       pro <- "Protocol file: '10 min pre-exposure Days 1 and 2.pro'"
       cmp <- "Component file: '10 min preexposure.cmp'"
       for (i in seq(from=1, to=n)) {
@@ -279,7 +282,7 @@ server <- function(input, output) {
       SecDF[1,10:12] <- paste0("MOTION_", FirDF[square1:end,6])
       n <- input$NoM
       width <- 12
-      type <- "Immediate Shock"
+      type <- "Experiment: Immediate Shock"
       pro <- "Protocol file: 'Immediate Shock 10sec PSI Day 3.pro'"
       cmp <- "Component file: 'immediate shock 10s PSI.cmp'"
       for (i in seq(from=1, to=n)) {
@@ -298,17 +301,22 @@ server <- function(input, output) {
     
     # Footer information
     SecDF2 <- SecDF
-    SecDF2[(n+2:13),1:width] <- ""
+    SecDF2[(n+2:20),1:width] <- ""
     
-    SecDF2[(n+3:5),1] <- c(type, pro, cmp)
-    SecDF2[(n+6),1] <- "Output values in columns beginning with 'FREEZING_' are the 'Pct Component Time Freezing' values associated with the indicated component, while values in the corresponding 'MOTION_' columns are 'Avg Motion Index.'"
+    SecDF2[(n+3),1] <- "'FREEZING_' columns contain 'Pct Component Time Freezing' values associated with the indicated component, while 'MOTION_' columns contain the corresponding 'Avg Motion Index' data. "
     
-    SecDF2[(n+8),1] <- paste("Time of experiment:", as.character(FirDF[1,2]))
-    SecDF2[(n+9),1] <- paste("Time of reformatting:", as.character(paste(Sys.time(), "|", Sys.timezone())))
+    SecDF2[(n+5),1] <- as.character(paste("Original report file:", file1$name))
+    SecDF2[(n+6),1] <- paste("Report retrieved:", as.character(FirDF[1,2]))
+    SecDF2[(n+7:9),1] <- c(type, pro, cmp)
+    SecDF2[(n+10),1] <- paste("Motion threshold (au):", FirDF[2,2])
+    SecDF2[(n+11),1] <- paste("Detection method:", FirDF[3,2])
+    SecDF2[(n+12),1] <- paste("Min freeze duration (f):", FirDF[4,2])
     
-    SecDF2[(n+11),1] <- R.version$version.string
-    SecDF2[(n+12),1] <- paste("shiny version", packageVersion("shiny"))
-    SecDF2[(n+13),1] <- "ReformatR version 1.2"
+    SecDF2[(n+14),1] <- paste("Report reformatted:", as.character(paste(Sys.time(), "|", Sys.timezone())))
+    SecDF2[(n+15),1] <- paste("Empty rows in input file ignored?", yesno)
+    SecDF2[(n+16),1] <- "ReformatR version 1.2"
+    SecDF2[(n+17),1] <- R.version$version.string
+    SecDF2[(n+18),1] <- paste("shiny version", packageVersion("shiny"))
     
     SecDF2 <<- SecDF2
     SecDF <<- SecDF
